@@ -9,6 +9,7 @@ import (
 )
 
 func main() {
+	//hw02_unpack_string.Unpack("a4bc2d5e")
 	fmt.Println("current time:", time.Now())
 	ntpTime, err := ntp.Time("0.beevik-ntp.pool.ntp.org")
 	if err != nil {
