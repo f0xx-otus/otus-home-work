@@ -19,15 +19,14 @@ func Unpack(input string) (string, error) {
 	}
 
 	for i, r := range runeSlice {
-		if r == '\\' && isNextSymbolEscaped == false {
+		if r == '\\' && !isNextSymbolEscaped {
 			isNextSymbolEscaped = true
 			continue
 		}
-		if unicode.IsDigit(r) && isNextSymbolEscaped == false {
-			if i < (len(runeSlice) - 1) {
-				if unicode.IsDigit(runeSlice[i+1]) {
-					return "", ErrInvalidString
-				}
+		if unicode.IsDigit(r) && !isNextSymbolEscaped {
+			errText, err := TwoDigitCheck(i, runeSlice)
+			if err != nil {
+				return errText, err
 			}
 		}
 		if unicode.IsLetter(r) || isNextSymbolEscaped {
@@ -35,7 +34,7 @@ func Unpack(input string) (string, error) {
 			isNextSymbolEscaped = false
 			if i < (len(runeSlice) - 1) {
 				if unicode.IsDigit(runeSlice[i+1]) {
-					output += MultiplyLetters(runeSlice, i)
+					output += multiplyLetters(runeSlice, i)
 				}
 			}
 		}
@@ -46,11 +45,20 @@ func Unpack(input string) (string, error) {
 	return output, nil
 }
 
-func MultiplyLetters(runeSlice []rune, i int) string {
+func multiplyLetters(runeSlice []rune, i int) string {
 	letter := string(runeSlice[i])
 	var multiLetter string
 	for j := 1; j < int(runeSlice[i+1]-'0'); j++ {
 		multiLetter += letter
 	}
 	return multiLetter
+}
+
+func TwoDigitCheck(i int, runeSlice []rune) (string, error) {
+	if i < (len(runeSlice) - 1) {
+		if unicode.IsDigit(runeSlice[i+1]) {
+			return "", ErrInvalidString
+		}
+	}
+	return "", nil
 }
