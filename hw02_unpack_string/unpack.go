@@ -2,34 +2,45 @@ package hw02_unpack_string //nolint:golint,stylecheck
 
 import (
 	"errors"
+	"fmt"
 	"unicode"
 )
 
 var ErrInvalidString = errors.New("invalid string")
 
 func Unpack(input string) (string, error) {
+	fmt.Println(input)
 	var output string
 	runeSlice := []rune(input)
+	isNextSymbolEscaped := false
 
 	if input == "" {
 		return "", nil
 	}
 
 	for i, r := range runeSlice {
-		if unicode.IsLetter(r) {
+		if r == '\\' && isNextSymbolEscaped == false {
+			isNextSymbolEscaped = true
+			continue
+		}
+		if unicode.IsDigit(r) && isNextSymbolEscaped == false {
+			if i < (len(runeSlice) - 1) {
+				if unicode.IsDigit(runeSlice[i+1]) {
+					return "", ErrInvalidString
+				}
+			}
+		}
+		if unicode.IsLetter(r) || isNextSymbolEscaped {
 			output += string(r)
+			isNextSymbolEscaped = false
 			if i < (len(runeSlice) - 1) {
 				if unicode.IsDigit(runeSlice[i+1]) {
 					output += MultiplyLetters(runeSlice, i)
 				}
 			}
 		}
-		if unicode.IsDigit(r) {
-			if i < (len(runeSlice) - 1) {
-				if unicode.IsDigit(runeSlice[i+1]) {
-					return "", ErrInvalidString
-				}
-			}
+		if len(runeSlice) > 0 && output == "" {
+			return "", ErrInvalidString
 		}
 	}
 	return output, nil
