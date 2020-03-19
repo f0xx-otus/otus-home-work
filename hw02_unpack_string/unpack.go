@@ -2,63 +2,62 @@ package hw02_unpack_string //nolint:golint,stylecheck
 
 import (
 	"errors"
-	"fmt"
+	"strings"
 	"unicode"
 )
 
 var ErrInvalidString = errors.New("invalid string")
 
 func Unpack(input string) (string, error) {
-	fmt.Println(input)
 	var output string
 	runeSlice := []rune(input)
-	isNextSymbolEscaped := false
-
+	var isNextSymbolEscaped bool
 	if input == "" {
 		return "", nil
 	}
-
 	for i, r := range runeSlice {
+		if r == '\\' && len(runeSlice) == 1 {
+			return "", ErrInvalidString
+		}
 		if r == '\\' && !isNextSymbolEscaped {
 			isNextSymbolEscaped = true
 			continue
 		}
 		if unicode.IsDigit(r) && !isNextSymbolEscaped {
-			errText, err := TwoDigitCheck(i, runeSlice)
+			err := twoDigitCheck(i, runeSlice)
 			if err != nil {
-				return errText, err
+				return "", err
 			}
+		}
+		if unicode.IsLetter(r) && i > 0 && isNextSymbolEscaped {
+			isNextSymbolEscaped = false
+			continue
 		}
 		if unicode.IsLetter(r) || isNextSymbolEscaped {
 			output += string(r)
 			isNextSymbolEscaped = false
 			if i < (len(runeSlice) - 1) {
 				if unicode.IsDigit(runeSlice[i+1]) {
-					output += multiplyLetters(runeSlice, i)
+					output += multiplyLetters(r, runeSlice[i+1])
 				}
 			}
 		}
-		if len(runeSlice) > 0 && output == "" {
-			return "", ErrInvalidString
-		}
+	}
+	if len(runeSlice) > 0 && output == "" {
+		return "", ErrInvalidString
 	}
 	return output, nil
 }
 
-func multiplyLetters(runeSlice []rune, i int) string {
-	letter := string(runeSlice[i])
-	var multiLetter string
-	for j := 1; j < int(runeSlice[i+1]-'0'); j++ {
-		multiLetter += letter
-	}
-	return multiLetter
+func multiplyLetters(rune rune, i rune) string {
+	return strings.Repeat(string(rune), int(i-'0')-1)
 }
 
-func TwoDigitCheck(i int, runeSlice []rune) (string, error) {
+func twoDigitCheck(i int, runeSlice []rune) error {
 	if i < (len(runeSlice) - 1) {
 		if unicode.IsDigit(runeSlice[i+1]) {
-			return "", ErrInvalidString
+			return ErrInvalidString
 		}
 	}
-	return "", nil
+	return nil
 }

@@ -1,6 +1,7 @@
 package hw02_unpack_string //nolint:golint,stylecheck
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -21,10 +22,6 @@ func TestUnpack(t *testing.T) {
 		{
 			input:    "a3",
 			expected: "aaa",
-		},
-		{
-			input:    "",
-			expected: "",
 		},
 		{
 			input:    "a4bc2d5e",
@@ -49,6 +46,7 @@ func TestUnpack(t *testing.T) {
 			expected: "",
 		},
 	} {
+		fmt.Println(tst.input)
 		result, err := Unpack(tst.input)
 		require.Equal(t, tst.err, err)
 		require.Equal(t, tst.expected, result)
@@ -56,7 +54,6 @@ func TestUnpack(t *testing.T) {
 }
 
 func TestUnpackWithEscape(t *testing.T) {
-	//t.Skip() // Remove if task with asterisk completed
 
 	for _, tst := range [...]test{
 		{
@@ -65,7 +62,13 @@ func TestUnpackWithEscape(t *testing.T) {
 		},
 		{
 			input:    `\q`,
-			expected: `q`,
+			expected: ``,
+			err:      ErrInvalidString,
+		},
+		{
+			input:    `\q\w\e`,
+			expected: ``,
+			err:      ErrInvalidString,
 		},
 		{
 			input:    `\4`,
@@ -78,6 +81,7 @@ func TestUnpackWithEscape(t *testing.T) {
 		{
 			input:    `\`,
 			expected: ``,
+			err:      ErrInvalidString,
 		},
 		{
 			input:    `qwe\45`,
