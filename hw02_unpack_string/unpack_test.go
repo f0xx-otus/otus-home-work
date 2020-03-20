@@ -1,7 +1,6 @@
 package hw02_unpack_string //nolint:golint,stylecheck
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -46,7 +45,6 @@ func TestUnpack(t *testing.T) {
 			expected: "",
 		},
 	} {
-		fmt.Println(tst.input)
 		result, err := Unpack(tst.input)
 		require.Equal(t, tst.err, err)
 		require.Equal(t, tst.expected, result)
