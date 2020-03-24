@@ -12,12 +12,17 @@ type pair struct {
 
 type pairList []pair
 
+const outputSliceLength = 9
+
 func Top10(input string) []string {
-	var output []string
+	output := make([]string, 0, 10)
 	stringsSlice := prepareString(input)
 	sortedSlice := countWords(stringsSlice)
-	for i := 0; i < 10; i++ {
-		output = append(output, sortedSlice[i].Key)
+	if len(sortedSlice) > outputSliceLength {
+		sortedSlice = sortedSlice[:10]
+	}
+	for _, val := range sortedSlice {
+		output = append(output, val.Key)
 	}
 	return output
 }
