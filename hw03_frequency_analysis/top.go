@@ -14,30 +14,24 @@ type pairList []pair
 
 func Top10(input string) []string {
 	var output []string
-	stringsSlice, err := prepareString(input)
-	if err != nil {
-		return output
-	}
+	stringsSlice := prepareString(input)
 	sortedSlice := countWords(stringsSlice)
-	for i, item := range sortedSlice {
-		output = append(output, item.Key)
-		if i == 9 {
-			break
-		}
+	for i := 0; i < 10; i++ {
+		output = append(output, sortedSlice[i].Key)
 	}
 	return output
 }
 
-func prepareString(inputString string) ([]string, error) {
+func prepareString(inputString string) []string {
 	var output []string
-	reg := regexp.MustCompile("[^\\wа-яА-Я0-9]+")
+	reg := regexp.MustCompile(`[^\wа-яА-Я0-9]+`)
 	inputString = strings.ToLower(inputString)
 	inputString = strings.TrimSpace(inputString)
 	output = strings.Fields(inputString)
 	for i, val := range output {
 		output[i] = reg.ReplaceAllString(val, "")
 	}
-	return output, nil
+	return output
 }
 
 func countWords(inputString []string) pairList {
@@ -48,7 +42,7 @@ func countWords(inputString []string) pairList {
 			continue
 		}
 		if ok {
-			output[value] += 1
+			output[value]++
 		} else {
 			output[value] = 1
 		}
