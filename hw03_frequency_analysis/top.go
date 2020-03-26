@@ -29,7 +29,7 @@ func Top10(input string) []string {
 
 func prepareString(inputString string) []string {
 	var output []string
-	reg := regexp.MustCompile(`[^\wа-яА-Я0-9]+`)
+	reg := regexp.MustCompile(`[^\w]+$`)
 	inputString = strings.ToLower(inputString)
 	inputString = strings.TrimSpace(inputString)
 	output = strings.Fields(inputString)

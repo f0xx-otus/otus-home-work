@@ -1,9 +1,8 @@
 package hw03_frequency_analysis //nolint:golint
-
 import (
-	"testing"
-
+	"fmt"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 // Change to true if needed
@@ -42,6 +41,13 @@ var text = `Как ,видите, он  спускается  по  лестни
 	иногда,  особенно  когда  папа  дома,  он больше любит тихонько
 	посидеть у огня и послушать какую-нибудь интересную сказку.
 		В этот вечер...`
+var specail1 = "~`!@ #$% ^&*() +{  }[]|;':\",.<>?"
+var digits = ` 1234 324 234
+	234234 324234234234234 1234 1234 1 2 3 1 1
+	1 1 1 1 1 1`
+var postfix = "a, a! a\\ a b^"
+var one = "  ddd  "
+var dash = "aaabbb, aaa-bbb"
 
 func TestTop10(t *testing.T) {
 	t.Run("no words in empty string", func(t *testing.T) {
@@ -50,11 +56,31 @@ func TestTop10(t *testing.T) {
 
 	t.Run("positive test", func(t *testing.T) {
 		if taskWithAsteriskIsCompleted {
+			fmt.Println(Top10(text))
 			expected := []string{"он", "а", "и", "что", "ты", "не", "если", "то", "его", "кристофер", "робин", "в"}
 			assert.Subset(t, expected, Top10(text))
 		} else {
 			expected := []string{"он", "и", "а", "что", "ты", "не", "если", "-", "то", "Кристофер"}
 			assert.ElementsMatch(t, expected, Top10(text))
 		}
+	})
+	t.Run("special symbols", func(t *testing.T) {
+		assert.Len(t, Top10(specail1), 0)
+	})
+	t.Run("digits", func(t *testing.T) {
+		expected := []string{"1", "1234", "2", "3", "234234", "324234234234234", "324", "234"}
+		assert.ElementsMatch(t, expected, Top10(digits))
+	})
+	t.Run("different postfix", func(t *testing.T) {
+		expected := []string{"a", "b"}
+		assert.ElementsMatch(t, expected, Top10(postfix))
+	})
+	t.Run("one word", func(t *testing.T) {
+		expected := []string{"ddd"}
+		assert.ElementsMatch(t, expected, Top10(one))
+	})
+	t.Run("dash inside", func(t *testing.T) {
+		expected := []string{"aaabbb", "aaa-bbb"}
+		assert.ElementsMatch(t, expected, Top10(dash))
 	})
 }
