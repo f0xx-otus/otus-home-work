@@ -1,13 +1,14 @@
 package hw04_lru_cache //nolint:golint,stylecheck
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestList(t *testing.T) {
-	t.Run("empty list", func(t *testing.T) {
+	t.Run("empty ListView", func(t *testing.T) {
 		l := NewList()
 
 		require.Equal(t, l.Len(), 0)
@@ -29,8 +30,10 @@ func TestList(t *testing.T) {
 
 		for i, v := range [...]int{40, 50, 60, 70, 80} {
 			if i%2 == 0 {
+				fmt.Println("push front", i, v)
 				l.PushFront(v)
 			} else {
+				fmt.Println("push back", i, v)
 				l.PushBack(v)
 			}
 		} // [80, 60, 40, 10, 30, 50, 70]
