@@ -2,7 +2,7 @@ package hw04_lru_cache //nolint:golint,stylecheck
 
 type Key string
 
-type Cache interface {
+type Cacher interface {
 	Set(key Key, value interface{}) bool
 	Get(key Key) (interface{}, bool)
 	Clear()
@@ -14,7 +14,7 @@ type lruCache struct {
 	dict     map[Key]*ListItem
 }
 
-func NewCache(capacity int) Cache {
+func NewCache(capacity int) Cacher {
 	return &lruCache{capacity: capacity, queue: NewList(), dict: map[Key]*ListItem{}}
 }
 

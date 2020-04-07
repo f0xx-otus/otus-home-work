@@ -1,6 +1,6 @@
 package hw04_lru_cache //nolint:golint,stylecheck
 
-type List interface {
+type Lister interface {
 	Len() int
 	Front() *ListItem
 	Back() *ListItem
