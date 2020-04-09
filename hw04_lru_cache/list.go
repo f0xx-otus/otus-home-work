@@ -1,6 +1,9 @@
 package hw04_lru_cache //nolint:golint,stylecheck
+import (
+	"sync"
+)
 
-type Lister interface {
+type List interface {
 	Len() int
 	Front() *ListItem
 	Back() *ListItem
@@ -11,11 +14,13 @@ type Lister interface {
 }
 
 type ListItem struct {
+	sync.Mutex
 	Value      interface{}
 	Next, Prev *ListItem
 }
 
 type ListView struct {
+	sync.Mutex
 	len         int
 	First, Last *ListItem
 }
@@ -37,6 +42,8 @@ func (l *ListView) Back() *ListItem {
 }
 
 func (l *ListView) PushFront(data interface{}) *ListItem {
+	l.Lock()
+	defer l.Unlock()
 	var listItem ListItem
 	listItem.Value = data
 	if l.First == nil {
@@ -72,20 +79,22 @@ func (l *ListView) PushBack(data interface{}) *ListItem {
 }
 
 func (l *ListView) Remove(item *ListItem) {
+	l.Lock()
+	defer l.Unlock()
 	if l.len == 1 {
+		l.First.Value = 0
 		l.First = nil
 		l.Last = nil
-		l.First.Value = 0
 		l.len--
 		return
 	}
-	if item == l.Last {
+	if item.Prev == nil {
 		l.Last.Next.Prev = nil
 		l.Last = l.Last.Next
 		l.len--
 		return
 	}
-	if item == l.First {
+	if item.Next == nil {
 		l.First.Prev.Next = nil
 		l.First = l.First.Prev
 		l.len--

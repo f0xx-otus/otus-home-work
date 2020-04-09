@@ -1,24 +1,30 @@
 package hw04_lru_cache //nolint:golint,stylecheck
+import (
+	"sync"
+)
 
 type Key string
 
-type Cacher interface {
+type Cache interface {
 	Set(key Key, value interface{}) bool
 	Get(key Key) (interface{}, bool)
 	Clear()
 }
 
 type lruCache struct {
+	sync.Mutex
 	capacity int
 	queue    *ListView
 	dict     map[Key]*ListItem
 }
 
-func NewCache(capacity int) Cacher {
+func NewCache(capacity int) Cache {
 	return &lruCache{capacity: capacity, queue: NewList(), dict: map[Key]*ListItem{}}
 }
 
 func (l *lruCache) Set(key Key, value interface{}) bool {
+	l.Lock()
+	defer l.Unlock()
 	if _, ok := l.dict[key]; ok {
 		l.queue.Remove(l.dict[key])
 		l.dict[key] = l.queue.PushFront(value)
@@ -30,7 +36,7 @@ func (l *lruCache) Set(key Key, value interface{}) bool {
 		return false
 	}
 	for k, v := range l.dict {
-		if v.Value == l.queue.Back() {
+		if v.Value == l.queue.Back().Value {
 			delete(l.dict, k)
 		}
 	}
@@ -40,10 +46,12 @@ func (l *lruCache) Set(key Key, value interface{}) bool {
 }
 
 func (l *lruCache) Get(key Key) (interface{}, bool) {
+	l.Lock()
+	defer l.Unlock()
 	if _, ok := l.dict[key]; ok {
 		item := l.dict[key].Value
-		l.queue.Remove(l.dict[key])
-		l.dict[key] = l.queue.PushFront(l.dict[key])
+		l.queue.MoveToFront(l.dict[key])
+		l.dict[key] = l.queue.First
 		return item, true
 	}
 	return nil, false
