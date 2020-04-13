@@ -29,6 +29,8 @@ func TestRun(t *testing.T) {
 		maxErrorsCount := 23
 		result := Run(tasks, workersCount, maxErrorsCount)
 
+		fmt.Println(result)
+
 		require.Equal(t, ErrErrorsLimitExceeded, result)
 		require.LessOrEqual(t,
 			int32(workersCount+maxErrorsCount), runTasksCount, "extra tasks were started")
