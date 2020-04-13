@@ -25,9 +25,9 @@ func NewCache(capacity int) Cache {
 func (l *lruCache) Set(key Key, value interface{}) bool {
 	l.Lock()
 	defer l.Unlock()
-	if _, ok := l.dict[key]; ok {
-		l.queue.Remove(l.dict[key])
-		l.dict[key] = l.queue.PushFront(value)
+	if item, ok := l.dict[key]; ok {
+		item.Value = value
+		l.queue.MoveToFront(item)
 		return true
 	}
 	if len(l.dict) < l.capacity {
@@ -48,11 +48,10 @@ func (l *lruCache) Set(key Key, value interface{}) bool {
 func (l *lruCache) Get(key Key) (interface{}, bool) {
 	l.Lock()
 	defer l.Unlock()
-	if _, ok := l.dict[key]; ok {
-		item := l.dict[key].Value
+	if item, ok := l.dict[key]; ok {
 		l.queue.MoveToFront(l.dict[key])
-		l.dict[key] = l.queue.First
-		return item, true
+		l.dict[key] = l.queue.first
+		return item.Value, true
 	}
 	return nil, false
 }

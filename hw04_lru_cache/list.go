@@ -1,7 +1,4 @@
 package hw04_lru_cache //nolint:golint,stylecheck
-import (
-	"sync"
-)
 
 type List interface {
 	Len() int
@@ -14,15 +11,13 @@ type List interface {
 }
 
 type ListItem struct {
-	sync.Mutex
 	Value      interface{}
 	Next, Prev *ListItem
 }
 
 type ListView struct {
-	sync.Mutex
 	len         int
-	First, Last *ListItem
+	first, last *ListItem
 }
 
 func NewList() *ListView {
@@ -34,31 +29,29 @@ func (l *ListView) Len() int {
 }
 
 func (l *ListView) Front() *ListItem {
-	return l.First
+	return l.first
 }
 
 func (l *ListView) Back() *ListItem {
-	return l.Last
+	return l.last
 }
 
 func (l *ListView) PushFront(data interface{}) *ListItem {
-	l.Lock()
-	defer l.Unlock()
 	var listItem ListItem
 	listItem.Value = data
-	if l.First == nil {
-		l.First = &listItem
-		l.Last = &listItem
+	if l.first == nil {
+		l.first = &listItem
+		l.last = &listItem
 		listItem.Next = nil
 		listItem.Prev = nil
 		l.len++
 		return &listItem
 	}
-	oldFirst := l.First
+	oldFirst := l.first
 	listItem.Prev = oldFirst
 	listItem.Next = oldFirst.Next
-	l.First = &listItem
-	oldFirst.Next = l.First
+	l.first = &listItem
+	oldFirst.Next = l.first
 	l.len++
 	return &listItem
 }
@@ -66,37 +59,35 @@ func (l *ListView) PushFront(data interface{}) *ListItem {
 func (l *ListView) PushBack(data interface{}) *ListItem {
 	var listItem ListItem
 	listItem.Value = data
-	if l.Last == nil {
+	if l.last == nil {
 		return l.PushFront(data)
 	}
-	oldLast := l.Last
+	oldLast := l.last
 	listItem.Next = oldLast
 	listItem.Prev = oldLast.Prev
-	l.Last = &listItem
-	oldLast.Prev = l.Last
+	l.last = &listItem
+	oldLast.Prev = l.last
 	l.len++
 	return &listItem
 }
 
 func (l *ListView) Remove(item *ListItem) {
-	l.Lock()
-	defer l.Unlock()
 	if l.len == 1 {
-		l.First.Value = 0
-		l.First = nil
-		l.Last = nil
+		l.first.Value = 0
+		l.first = nil
+		l.last = nil
 		l.len--
 		return
 	}
 	if item.Prev == nil {
-		l.Last.Next.Prev = nil
-		l.Last = l.Last.Next
+		l.last = l.last.Next
+		l.last.Prev = nil
 		l.len--
 		return
 	}
 	if item.Next == nil {
-		l.First.Prev.Next = nil
-		l.First = l.First.Prev
+		l.first = l.first.Prev
+		l.first.Next = nil
 		l.len--
 		return
 	}
