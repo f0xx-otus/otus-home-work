@@ -7,7 +7,7 @@ import (
 )
 
 func TestList(t *testing.T) {
-	t.Run("empty list", func(t *testing.T) {
+	t.Run("empty ListView", func(t *testing.T) {
 		l := NewList()
 
 		require.Equal(t, l.Len(), 0)
@@ -47,5 +47,24 @@ func TestList(t *testing.T) {
 			elems = append(elems, i.Value.(int))
 		}
 		require.Equal(t, []int{50, 30, 10, 40, 60, 80, 70}, elems)
+	})
+
+	t.Run("remove all", func(t *testing.T) {
+		l := NewList()
+
+		for i, v := range [...]int{40, 50, 60, 70, 80} {
+			if i%2 == 0 {
+				l.PushFront(v)
+			} else {
+				l.PushBack(v)
+			}
+		}
+
+		for i := l.Back(); i != nil; i = i.Next {
+			l.Remove(i)
+		}
+		require.Equal(t, l.Len(), 0)
+		require.Nil(t, l.Front())
+		require.Nil(t, l.Back())
 	})
 }
