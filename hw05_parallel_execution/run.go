@@ -2,7 +2,6 @@ package hw05_parallel_execution //nolint:golint,stylecheck
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 	"sync/atomic"
 )
@@ -11,57 +10,56 @@ var ErrErrorsLimitExceeded = errors.New("errors limit exceeded")
 
 type Task func() error
 
-var taskChannel chan Task
 var errCount int32
-var taskMu sync.Mutex
-var cond *sync.Cond
-var wg sync.WaitGroup
+var taskChannel chan Task
 
 // Run starts tasks in N goroutines and stops its work when receiving M errors from tasks
-func Run(tasks []Task, N int, M int) error {
-	wg.Add(2)
+func Run(tasks []Task, n int, m int) error {
+	maxErrCount := uint(m)
+	goroutineCount := uint(n)
+	taskChannel = make(chan Task)
+	errCount = 0
+	wg := &sync.WaitGroup{}
+	wg.Add(n + 1)
+	for i := uint(0); i < goroutineCount; i++ {
+		go func() {
+			defer wg.Done()
+			worker(taskChannel)
+		}()
+	}
+
 	go func() {
 		defer wg.Done()
-		for i := 0; i < N; i++ {
-			fmt.Println(i)
-		}
-	}()
-	go func() {
-		defer wg.Done()
-		fmt.Println("pub")
+		publisher(tasks, maxErrCount)
 	}()
 	wg.Wait()
-	fmt.Println(errCount)
-	if errCount > int32(M) {
+	if errCount >= int32(m) {
 		return ErrErrorsLimitExceeded
 	}
 	return nil
 }
 
-func publisher(tasks []Task, setErrCount int) {
-	if errCount == int32(setErrCount) {
-		close(taskChannel)
-	}
+func publisher(tasks []Task, setErrCount uint) {
 	for _, t := range tasks {
+		if errCount == int32(setErrCount) {
+			close(taskChannel)
+			return
+		}
 		if errCount < int32(setErrCount) {
-			taskMu.Lock()
 			taskChannel <- t
-			taskMu.Unlock()
-			cond.Broadcast()
 		}
 	}
+	close(taskChannel)
 }
 
-func worker() {
-	taskMu.Lock()
-	task, ok := <-taskChannel
-	for !ok {
-		cond.Wait()
+func worker(taskChannel chan Task) {
+	for {
+		task, ok := <-taskChannel
+		if !ok {
+			return
+		}
+		if task() != nil {
+			atomic.AddInt32(&errCount, 1)
+		}
 	}
-	result := task()
-	if result != nil {
-		return
-	}
-	taskMu.Unlock()
-	atomic.AddInt32(&errCount, 1)
 }
