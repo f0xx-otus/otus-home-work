@@ -7,31 +7,29 @@ import (
 )
 
 var ErrErrorsLimitExceeded = errors.New("errors limit exceeded")
+var taskChannel chan Task
 
 type Task func() error
 
-var errCount int32
-var taskChannel chan Task
-
 // Run starts tasks in N goroutines and stops its work when receiving M errors from tasks
 func Run(tasks []Task, n int, m int) error {
+	var mutex sync.Mutex
+	var errCount int32
 	maxErrCount := uint(m)
 	goroutineCount := uint(n)
 	taskChannel = make(chan Task)
-	errCount = 0
 	wg := &sync.WaitGroup{}
 	wg.Add(n + 1)
+	go func() {
+		defer wg.Done()
+		publisher(tasks, maxErrCount, &mutex, &errCount)
+	}()
 	for i := uint(0); i < goroutineCount; i++ {
 		go func() {
 			defer wg.Done()
-			worker(taskChannel)
+			worker(taskChannel, &mutex, &errCount)
 		}()
 	}
-
-	go func() {
-		defer wg.Done()
-		publisher(tasks, maxErrCount)
-	}()
 	wg.Wait()
 	if errCount >= int32(m) {
 		return ErrErrorsLimitExceeded
@@ -39,27 +37,30 @@ func Run(tasks []Task, n int, m int) error {
 	return nil
 }
 
-func publisher(tasks []Task, setErrCount uint) {
+func publisher(tasks []Task, setErrCount uint, mutex *sync.Mutex, errCount *int32) {
 	for _, t := range tasks {
-		if errCount == int32(setErrCount) {
+		mutex.Lock()
+		if *errCount == int32(setErrCount) {
+			mutex.Unlock()
 			close(taskChannel)
 			return
 		}
-		if errCount < int32(setErrCount) {
-			taskChannel <- t
-		}
+		mutex.Unlock()
+		taskChannel <- t
 	}
 	close(taskChannel)
 }
 
-func worker(taskChannel chan Task) {
+func worker(taskChannel chan Task, mutex *sync.Mutex, errCount *int32) {
 	for {
 		task, ok := <-taskChannel
 		if !ok {
 			return
 		}
 		if task() != nil {
-			atomic.AddInt32(&errCount, 1)
+			mutex.Lock()
+			atomic.AddInt32(errCount, 1)
+			mutex.Unlock()
 		}
 	}
 }
