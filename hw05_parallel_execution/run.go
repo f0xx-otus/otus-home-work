@@ -14,7 +14,6 @@ var mutex sync.Mutex
 
 type Task func() error
 
-// Run starts tasks in N goroutines and stops its work when receiving M errors from tasks
 func Run(tasks []Task, n int, m int) error {
 	var errCount int32
 	if n < 0 || m < 0 {
