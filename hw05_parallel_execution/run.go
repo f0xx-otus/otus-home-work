@@ -7,6 +7,8 @@ import (
 )
 
 var ErrErrorsLimitExceeded = errors.New("errors limit exceeded")
+var ErrInvalidValues = errors.New("number of goroutines or max errors count are negative")
+
 var taskChannel chan Task
 var mutex sync.Mutex
 
@@ -15,16 +17,19 @@ type Task func() error
 // Run starts tasks in N goroutines and stops its work when receiving M errors from tasks
 func Run(tasks []Task, n int, m int) error {
 	var errCount int32
-	maxErrCount := uint(m)
-	goroutineCount := uint(n)
+	if n < 0 || m < 0 {
+		return ErrInvalidValues
+	}
+	maxErrCount := m
+	goroutineCount := n
 	taskChannel = make(chan Task)
 	wg := &sync.WaitGroup{}
-	wg.Add(n + 1)
+	wg.Add(goroutineCount + 1)
 	go func() {
 		defer wg.Done()
 		publisher(tasks, maxErrCount, &errCount)
 	}()
-	for i := uint(0); i < goroutineCount; i++ {
+	for i := 0; i < goroutineCount; i++ {
 		go func() {
 			defer wg.Done()
 			worker(taskChannel, &errCount)
@@ -37,7 +42,7 @@ func Run(tasks []Task, n int, m int) error {
 	return nil
 }
 
-func publisher(tasks []Task, setErrCount uint, errCount *int32) {
+func publisher(tasks []Task, setErrCount int, errCount *int32) {
 	for _, t := range tasks {
 		mutex.Lock()
 		if *errCount == int32(setErrCount) {
