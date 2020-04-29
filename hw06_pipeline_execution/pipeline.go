@@ -26,13 +26,12 @@ func ExecutePipeline(in In, done In, stages ...Stage) Out {
 		go func(inputValue I, inputItemIndex int) {
 			defer wg.Done()
 			for _, stage := range stages {
+				tmpChan := make(Bi, 1)
+				tmpChan <- inputValue
 				select {
 				case <-done:
 					return
-				default:
-					tmpChan := make(Bi, 1)
-					tmpChan <- inputValue
-					inputValue = <-stage(tmpChan)
+				case inputValue = <-stage(tmpChan):
 				}
 			}
 			mutex.Lock()
