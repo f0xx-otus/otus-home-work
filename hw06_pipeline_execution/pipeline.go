@@ -1,4 +1,7 @@
 package hw06_pipeline_execution //nolint:golint,stylecheck
+import (
+	"sync"
+)
 
 type (
 	I   = interface{}
@@ -10,6 +13,54 @@ type (
 type Stage func(in In) (out Out)
 
 func ExecutePipeline(in In, done In, stages ...Stage) Out {
-	// Place your code here
-	return nil
+	var index int
+	var mutex sync.Mutex
+
+	outChan := make(Bi)
+	tmpMap := make(map[int]I)
+	wg := &sync.WaitGroup{}
+
+	for v := range in {
+		wg.Add(1)
+		index++
+		go func(inputValue I, inputItemIndex int) {
+			defer wg.Done()
+			for _, stage := range stages {
+				tmpChan := make(Bi, 1)
+				tmpChan <- inputValue
+				select {
+				case <-done:
+					return
+				case inputValue = <-stage(tmpChan):
+				}
+			}
+			mutex.Lock()
+			tmpMap[inputItemIndex] = inputValue
+			mutex.Unlock()
+		}(v, index)
+	}
+	go func() {
+		mapIndex := 1
+		for {
+			select {
+			case <-done:
+				close(outChan)
+				return
+			default:
+				if mapIndex > index {
+					close(outChan)
+					return
+				}
+				mutex.Lock()
+				value, ok := tmpMap[mapIndex]
+				mutex.Unlock()
+				if ok {
+					outChan <- value
+					mapIndex++
+				}
+			}
+		}
+	}()
+	wg.Wait()
+	return outChan
 }
