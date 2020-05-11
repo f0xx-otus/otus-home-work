@@ -66,7 +66,7 @@ func TestCopy(t *testing.T) {
 	})
 
 	t.Run("offset 2, limit 5", func(t *testing.T) {
-		var inputPath = "/home/dershov/otus.txt"
+		var inputPath = "testdata/input.txt"
 
 		outFile, err := ioutil.TempFile("/tmp", "prefix")
 		if err != nil {
@@ -79,16 +79,16 @@ func TestCopy(t *testing.T) {
 			}
 		}()
 
-		err = Copy(inputPath, outFile.Name(), 2, 5)
+		err = Copy(inputPath, outFile.Name(), 3, 9)
 		require.NoError(t, err)
 
 		resultFile, err := os.OpenFile(outFile.Name(), os.O_RDONLY, 0644)
 		if err != nil {
 			log.Panicf("can't open input file")
 		}
-		a, err := ioutil.ReadAll(resultFile)
+		output, err := ioutil.ReadAll(resultFile)
 		require.NoError(t, err)
 
-		require.Equal(t, "34567", string(a))
+		require.Equal(t, "Documents", string(output))
 	})
 }
