@@ -25,15 +25,12 @@ func Copy(fromPath string, toPath string, offset, limit int64) error {
 
 	fileFrom, err := os.OpenFile(fromPath, os.O_RDONLY, 0644)
 	if err != nil {
-		if os.IsNotExist(err) {
-			return errors.New("fileFrom is not exist")
-		}
-		return errors.New("can't open fileFrom")
+		return err
 	}
 
 	fileInfo, err := fileFrom.Stat()
 	if err != nil {
-		return errors.New("can't get fileFrom properties")
+		return err
 	}
 	if limit == 0 {
 		limit = fileInfo.Size()
@@ -47,12 +44,12 @@ func Copy(fromPath string, toPath string, offset, limit int64) error {
 	_, err = fileFrom.Seek(offset, 0)
 	if err != nil {
 		fmt.Println(err)
-		return errors.New("can't change offset")
+		return err
 	}
 
 	fileTo, err := os.Create(to)
 	if err != nil {
-		return errors.New("can't create a file")
+		return err
 	}
 	_, err = io.CopyN(fileTo, fileFrom, limit)
 	if err != nil {
@@ -60,14 +57,13 @@ func Copy(fromPath string, toPath string, offset, limit int64) error {
 			fmt.Println("Done")
 		} else {
 			fmt.Println(err)
-			return errors.New("can't copy file")
+			return err
 		}
 	}
 
 	err = fileFrom.Close()
 	if err != nil {
-		fmt.Println(err)
-		return errors.New("can't close fileFrom")
+		return err
 	}
 	return nil
 }
