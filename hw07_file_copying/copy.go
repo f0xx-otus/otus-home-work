@@ -2,9 +2,10 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"os"
+
+	"github.com/cheggaaa/pb/v3"
 )
 
 var (
@@ -12,15 +13,18 @@ var (
 	ErrOffsetExceedsFileSize = errors.New("offset exceeds file size")
 	ErrFromIsEmpty           = errors.New("source file is not set")
 	ErrToIsEmpty             = errors.New("destination file is not set")
+	ErrNegativeOffsetOrLimit = errors.New("offset and limit can't be negative")
 )
 
 func Copy(fromPath string, toPath string, offset, limit int64) error {
 	if fromPath == "" {
 		return ErrFromIsEmpty
 	}
-
 	if toPath == "" {
 		return ErrToIsEmpty
+	}
+	if offset < 0 || limit < 0 {
+		return ErrNegativeOffsetOrLimit
 	}
 
 	fileFrom, err := os.OpenFile(fromPath, os.O_RDONLY, 0644)
@@ -43,25 +47,28 @@ func Copy(fromPath string, toPath string, offset, limit int64) error {
 	}
 	_, err = fileFrom.Seek(offset, 0)
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 
-	fileTo, err := os.Create(to)
+	fileTo, err := os.Create(toPath)
 	if err != nil {
 		return err
 	}
-	_, err = io.CopyN(fileTo, fileFrom, limit)
+
+	bar := pb.Full.Start64(limit)
+	barReader := bar.NewProxyReader(fileFrom)
+	_, err = io.CopyN(fileTo, barReader, limit)
 	if err != nil {
-		if err == io.EOF {
-			fmt.Println("Done")
-		} else {
-			fmt.Println(err)
+		if err != io.EOF {
 			return err
 		}
 	}
 
 	err = fileFrom.Close()
+	if err != nil {
+		return err
+	}
+	err = fileTo.Close()
 	if err != nil {
 		return err
 	}
