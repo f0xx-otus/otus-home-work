@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"io"
+	"log"
 	"os"
 
 	"github.com/cheggaaa/pb/v3"
@@ -28,6 +29,12 @@ func Copy(fromPath string, toPath string, offset, limit int64) error {
 	}
 
 	fileFrom, err := os.OpenFile(fromPath, os.O_RDONLY, 0644)
+	defer func() {
+		err = fileFrom.Close()
+		if err != nil {
+			log.Panic("can't close output file", err)
+		}
+	}()
 	if err != nil {
 		return err
 	}
@@ -51,6 +58,12 @@ func Copy(fromPath string, toPath string, offset, limit int64) error {
 	}
 
 	fileTo, err := os.Create(toPath)
+	defer func() {
+		err = fileTo.Close()
+		if err != nil {
+			log.Panic("can't close output file", err)
+		}
+	}()
 	if err != nil {
 		return err
 	}
@@ -62,15 +75,6 @@ func Copy(fromPath string, toPath string, offset, limit int64) error {
 		if err != io.EOF {
 			return err
 		}
-	}
-
-	err = fileFrom.Close()
-	if err != nil {
-		return err
-	}
-	err = fileTo.Close()
-	if err != nil {
-		return err
 	}
 	return nil
 }
