@@ -8,8 +8,10 @@ import (
 
 // RunCmd runs a command + arguments (cmd) with environment variables from env
 func RunCmd(cmd []string, env Environment) (returnCode int) {
-	var envSlice []string
-	command := exec.Command(cmd[0], cmd[1:]...)
+	envSlice := make([]string, len(env))
+	app := cmd[0]
+	args := cmd[1:]
+	command := exec.Command(app, args...)
 	for k, v := range env {
 		env := k + "=" + v
 		envSlice = append(envSlice, env)

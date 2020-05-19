@@ -7,9 +7,6 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 3 {
-		log.Fatalf("not enough aguments to run")
-	}
 	dir := os.Args[1]
 	envDir, err := ReadDir(dir)
 	if err != nil {
@@ -39,5 +36,4 @@ func main() {
 	}
 	returnCode := RunCmd(os.Args[2:], envDir)
 	os.Exit(returnCode)
-
 }
