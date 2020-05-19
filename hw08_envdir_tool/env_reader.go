@@ -33,7 +33,8 @@ func ReadDir(dir string) (Environment, error) {
 		scanner := bufio.NewScanner(file)
 		scanner.Scan()
 		line = scanner.Text()
-		line = strings.TrimSpace(line)
+		line = strings.TrimRight(line, " ")
+		line = strings.Replace(line, "\x00", "\n", -1)
 		fileName = string(bytes.Replace([]byte(fileName), []byte("="), []byte(""), -1))
 		envList[fileName] = line
 		err = file.Close()
