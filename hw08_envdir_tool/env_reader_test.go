@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 	"testing"
 
@@ -13,13 +12,11 @@ func TestReadDir(t *testing.T) {
 		var envSlice []string
 		inputPath := "testdata/emptyDir"
 		err := os.Mkdir(inputPath, 0777)
+		require.NoError(t, err)
 		defer func() {
 			err = os.Remove(inputPath)
-			if err != nil {
-				log.Fatal(err)
-			}
+			require.NoError(t, err)
 		}()
-		require.NoError(t, err)
 		env, err := ReadDir(inputPath)
 		require.NoError(t, err)
 		for k, v := range env {
@@ -41,9 +38,7 @@ func TestReadDir(t *testing.T) {
 		require.NoError(t, err)
 		defer func() {
 			err = os.RemoveAll(inputPath)
-			if err != nil {
-				log.Fatal(err)
-			}
+			require.NoError(t, err)
 		}()
 		env, err := ReadDir(inputPath)
 		require.NoError(t, err)
@@ -67,9 +62,7 @@ func TestReadDir(t *testing.T) {
 		require.NoError(t, err)
 		defer func() {
 			err = os.RemoveAll(inputPath)
-			if err != nil {
-				log.Fatal(err)
-			}
+			require.NoError(t, err)
 		}()
 		env, err := ReadDir(inputPath)
 		require.NoError(t, err)
@@ -93,9 +86,7 @@ func TestReadDir(t *testing.T) {
 		require.NoError(t, err)
 		defer func() {
 			err = os.RemoveAll(inputPath)
-			if err != nil {
-				log.Fatal(err)
-			}
+			require.NoError(t, err)
 		}()
 		require.NoError(t, err)
 		env, err := ReadDir(inputPath)
