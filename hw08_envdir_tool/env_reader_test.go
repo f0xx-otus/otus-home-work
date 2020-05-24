@@ -19,13 +19,9 @@ func TestReadDir(t *testing.T) {
 				log.Fatal(err)
 			}
 		}()
-		if err != nil {
-			log.Fatal(err)
-		}
+		require.NoError(t, err)
 		env, err := ReadDir(inputPath)
-		if err != nil {
-			log.Fatal("can't get environment variabes ", err)
-		}
+		require.NoError(t, err)
 		for k, v := range env {
 			env := k + "=" + v
 			envSlice = append(envSlice, env)
@@ -38,14 +34,11 @@ func TestReadDir(t *testing.T) {
 		var envSlice []string
 		inputPath := "testdata/testDir/"
 		err := os.Mkdir(inputPath, 0777)
+		require.NoError(t, err)
 		file, err := os.Create(inputPath + "emptyFile")
-		if err != nil {
-			log.Fatal(err)
-		}
+		require.NoError(t, err)
 		err = file.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
+		require.NoError(t, err)
 		defer func() {
 			err = os.RemoveAll(inputPath)
 			if err != nil {
@@ -53,9 +46,7 @@ func TestReadDir(t *testing.T) {
 			}
 		}()
 		env, err := ReadDir(inputPath)
-		if err != nil {
-			log.Fatal("can't get environment variabes ", err)
-		}
+		require.NoError(t, err)
 		for k, v := range env {
 			env := k + "=" + v
 			envSlice = append(envSlice, env)
@@ -67,18 +58,13 @@ func TestReadDir(t *testing.T) {
 		var envSlice []string
 		inputPath := "testdata/testDir/"
 		err := os.Mkdir(inputPath, 0777)
+		require.NoError(t, err)
 		file, err := os.Create(inputPath + "testFile")
-		if err != nil {
-			log.Fatal(err)
-		}
+		require.NoError(t, err)
 		_, err = file.WriteString(" a b  c d  ")
-		if err != nil {
-			log.Fatal(err)
-		}
+		require.NoError(t, err)
 		err = file.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
+		require.NoError(t, err)
 		defer func() {
 			err = os.RemoveAll(inputPath)
 			if err != nil {
@@ -86,9 +72,7 @@ func TestReadDir(t *testing.T) {
 			}
 		}()
 		env, err := ReadDir(inputPath)
-		if err != nil {
-			log.Fatal("can't get environment variabes ", err)
-		}
+		require.NoError(t, err)
 		for k, v := range env {
 			env := k + "=" + v
 			envSlice = append(envSlice, env)
@@ -100,31 +84,22 @@ func TestReadDir(t *testing.T) {
 		var envSlice []string
 		inputPath := "testdata/testDir/"
 		err := os.Mkdir(inputPath, 0777)
+		require.NoError(t, err)
 		file, err := os.Create(inputPath + "==tes=tF=i=le===")
-		if err != nil {
-			log.Fatal(err)
-		}
+		require.NoError(t, err)
 		_, err = file.WriteString(" a b  c d  ")
-		if err != nil {
-			log.Fatal(err)
-		}
+		require.NoError(t, err)
 		err = file.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
+		require.NoError(t, err)
 		defer func() {
 			err = os.RemoveAll(inputPath)
 			if err != nil {
 				log.Fatal(err)
 			}
 		}()
-		if err != nil {
-			log.Fatal(err)
-		}
+		require.NoError(t, err)
 		env, err := ReadDir(inputPath)
-		if err != nil {
-			log.Fatal("can't get environment variabes ", err)
-		}
+		require.NoError(t, err)
 		for k, v := range env {
 			env := k + "=" + v
 			envSlice = append(envSlice, env)

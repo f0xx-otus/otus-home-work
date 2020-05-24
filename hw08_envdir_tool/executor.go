@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -17,18 +18,13 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 		envSlice = append(envSlice, env)
 	}
 	command.Env = append(os.Environ(), envSlice...)
-	command.Stdout = os.Stdout
-	command.Stderr = os.Stderr
-	err := command.Start()
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = command.Wait()
+	out, err := command.Output()
 	if err != nil {
 		if exitError, ok := err.(*exec.ExitError); ok {
 			return exitError.ExitCode()
 		}
 		log.Fatal(err)
 	}
+	fmt.Println(string(out))
 	return 0
 }
