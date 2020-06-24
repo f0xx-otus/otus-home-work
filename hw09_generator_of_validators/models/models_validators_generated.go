@@ -14,10 +14,10 @@ type ValidationError struct {
 func (t User) Validate() ([]ValidationError, error) {
 	var validErrs []ValidationError
 
-	if len(t.ID) != 32 {
+	if len(t.ID) != 36 {
 		validErrs = append(validErrs, ValidationError{
 			Field: "ID",
-			Err:   fmt.Errorf("wrong length: expected %d, got %d", 32, len(t.ID)),
+			Err:   fmt.Errorf("wrong length: expected %d, got %d", 36, len(t.ID)),
 		})
 	}
 
@@ -46,12 +46,27 @@ func (t User) Validate() ([]ValidationError, error) {
 		})
 	}
 
-	for i, _ := range t.Addresses {
+	strVariants := []string{"admin", "stuff"}
+	isStrVariant := false
+	for _, i := range strVariants {
+		if string(t.Role) == i {
+			isStrVariant = true
+			break
+		}
+	}
+	if !isStrVariant {
+		validErrs = append(validErrs, ValidationError{
+			Field: "Role",
+			Err:   fmt.Errorf("not allowed value %s", t.Role),
+		})
+	}
 
-		if len(t.Addresses[i]) != 250 {
+	for i, _ := range t.Phones {
+
+		if len(t.Phones[i]) != 11 {
 			validErrs = append(validErrs, ValidationError{
-				Field: "Addresses[i]",
-				Err:   fmt.Errorf("wrong length: expected %d, got %d", 250, len(t.Addresses[i])),
+				Field: "Phones[i]",
+				Err:   fmt.Errorf("wrong length: expected %d, got %d", 11, len(t.Phones[i])),
 			})
 		}
 
@@ -74,7 +89,7 @@ func (t App) Validate() ([]ValidationError, error) {
 func (t Response) Validate() ([]ValidationError, error) {
 	var validErrs []ValidationError
 
-	intVariants := []int{in, 200, 404, 500}
+	intVariants := []int{200, 404, 500}
 	isVariant := false
 	for _, i := range intVariants {
 		if t.Code == i {
