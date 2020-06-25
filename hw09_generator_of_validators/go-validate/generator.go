@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -195,7 +194,6 @@ type ValidationError struct{
 	}
 	tempStruct := prepareStruct(validateMap)
 	for _, v := range tempStruct {
-		fmt.Println(v)
 		err = t.ExecuteTemplate(file, "validate", v)
 		if err != nil {
 			return err

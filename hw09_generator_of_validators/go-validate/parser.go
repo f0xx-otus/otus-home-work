@@ -77,13 +77,11 @@ func convertType(fset *token.FileSet, path string, rawFieldType ast.Expr) (strin
 	for _, f := range node.Decls {
 		genD, ok := f.(*ast.GenDecl)
 		if !ok {
-			//fmt.Printf("SKIP %T is not *ast.GenDecl\n", f)
 			continue
 		}
 		for _, spec := range genD.Specs {
 			currType, ok := spec.(*ast.TypeSpec)
 			if !ok {
-				//fmt.Printf("SKIP %T is not *ast.TypeSpec\n", spec)
 				continue
 			}
 
