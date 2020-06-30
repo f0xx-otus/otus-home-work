@@ -11,6 +11,38 @@ type ValidationError struct {
 	Err   error
 }
 
+func (t App) Validate() ([]ValidationError, error) {
+	var validErrs []ValidationError
+
+	if len(t.Version) != 5 {
+		validErrs = append(validErrs, ValidationError{
+			Field: "Version",
+			Err:   fmt.Errorf("wrong length: expected %d, got %d", 5, len(t.Version)),
+		})
+	}
+
+	return validErrs, nil
+}
+func (t Response) Validate() ([]ValidationError, error) {
+	var validErrs []ValidationError
+
+	intVariants := []int{200, 404, 500}
+	isVariant := false
+	for _, i := range intVariants {
+		if t.Code == i {
+			isVariant = true
+			break
+		}
+	}
+	if !isVariant {
+		validErrs = append(validErrs, ValidationError{
+			Field: "Code",
+			Err:   fmt.Errorf("not allowed value %d", t.Code),
+		})
+	}
+
+	return validErrs, nil
+}
 func (t User) Validate() ([]ValidationError, error) {
 	var validErrs []ValidationError
 
@@ -70,38 +102,6 @@ func (t User) Validate() ([]ValidationError, error) {
 			})
 		}
 
-	}
-
-	return validErrs, nil
-}
-func (t App) Validate() ([]ValidationError, error) {
-	var validErrs []ValidationError
-
-	if len(t.Version) != 5 {
-		validErrs = append(validErrs, ValidationError{
-			Field: "Version",
-			Err:   fmt.Errorf("wrong length: expected %d, got %d", 5, len(t.Version)),
-		})
-	}
-
-	return validErrs, nil
-}
-func (t Response) Validate() ([]ValidationError, error) {
-	var validErrs []ValidationError
-
-	intVariants := []int{200, 404, 500}
-	isVariant := false
-	for _, i := range intVariants {
-		if t.Code == i {
-			isVariant = true
-			break
-		}
-	}
-	if !isVariant {
-		validErrs = append(validErrs, ValidationError{
-			Field: "Code",
-			Err:   fmt.Errorf("not allowed value %d", t.Code),
-		})
 	}
 
 	return validErrs, nil

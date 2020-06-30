@@ -26,7 +26,7 @@ func TestUserValidation(t *testing.T) {
 	}
 	requireNoValidationErrors(t, goodUser)
 
-	t.Run("ID length", func(t *testing.T) {
+	t.Run("ID length, error", func(t *testing.T) {
 		u := goodUser
 		u.ID = "123"
 
@@ -147,7 +147,6 @@ func requireNoValidation(t *testing.T, v interface{}, msgAndArgs ...interface{})
 func requireNoValidationErrors(t *testing.T, v Validated) {
 	errs, err := v.Validate()
 	require.Nil(t, err)
-	fmt.Println(errs)
 	require.Len(t, errs, 0)
 }
 

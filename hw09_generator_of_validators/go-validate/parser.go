@@ -48,7 +48,6 @@ func prepareValidateFields(fPath string, valMap *map[string][]item) error {
 
 					tags := field.Tag.Value
 					tag := prepareTags(tags)
-					fmt.Println(tag)
 					(*valMap)[structName] = append((*valMap)[structName], item{structName,
 						fieldName, fieldType, tag})
 				}
