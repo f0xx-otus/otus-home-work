@@ -22,21 +22,21 @@ type User struct {
 
 type DomainStat map[string]int
 
-var (
-	emails         []string
-	ErrEmptyDomain = errors.New("domain name can't be empty")
-)
+var ErrEmptyDomain = errors.New("domain name can't be empty")
 
 func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
 	if domain == "" {
 		return nil, ErrEmptyDomain
 	}
-	getEmails(r)
+	emails, err := getEmails(r)
+	if err != nil {
+		log.Fatal("can't get emails", err)
+	}
 	return countDomains(emails, domain)
 }
 
-func getEmails(r io.Reader) {
-	emails = []string{""}
+func getEmails(r io.Reader) ([]string, error) {
+	var emails []string
 	var user User
 	reader := bufio.NewReader(r)
 	for {
@@ -45,14 +45,15 @@ func getEmails(r io.Reader) {
 			if err == io.EOF {
 				break
 			}
-			log.Fatal("can't read the line", err)
+			return nil, err
 		}
 
 		if err := easyjson.Unmarshal(line, &user); err != nil {
-			log.Fatal("can't unmarshal the line", err)
+			return nil, err
 		}
 		emails = append(emails, user.Email)
 	}
+	return emails, nil
 }
 
 func countDomains(e []string, domain string) (DomainStat, error) {

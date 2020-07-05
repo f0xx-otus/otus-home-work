@@ -4,7 +4,6 @@ package hw10_program_optimization //nolint:golint,stylecheck
 
 import (
 	"archive/zip"
-	"log"
 	"testing"
 	"time"
 
@@ -433,36 +432,4 @@ var expectedBizStat = DomainStat{
 	"zoovu.biz":         38,
 	"zooxo.biz":         33,
 	"zoozzy.biz":        23,
-}
-
-func BenchmarkCountDomains(b *testing.B) {
-
-	r, err := zip.OpenReader("testdata/users.dat.zip")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer func() {
-		err := r.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
-
-	data, err := r.File[0].Open()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	getEmails(data)
-	/*if err != nil {
-		log.Fatal(err)
-	}*/
-
-	_, err = countDomains(emails, "biz")
-
-	//b.ResetTimer()
-
-	/*	for i:=0; i < b.N; i++ {
-		_, err = countDomains(emails, "biz")
-	}*/
 }
