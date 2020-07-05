@@ -1,11 +1,10 @@
 package hw10_program_optimization //nolint:golint,stylecheck
 
 import (
-	"encoding/json"
-	"fmt"
+	"github.com/valyala/fastjson"
 	"io"
 	"io/ioutil"
-	"regexp"
+	"log"
 	"strings"
 )
 
@@ -21,17 +20,18 @@ type User struct {
 
 type DomainStat map[string]int
 
+var emails [100_000]string
+var parser fastjson.Parser
+
 func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
-	u, err := getUsers(r)
+	err := getEmails(r)
 	if err != nil {
-		return nil, fmt.Errorf("get users error: %s", err)
+		return nil, err
 	}
-	return countDomains(u, domain)
+	return countDomains(emails, domain)
 }
 
-type users [100_000]User
-
-func getUsers(r io.Reader) (result users, err error) {
+func getEmails(r io.Reader) (err error) {
 	content, err := ioutil.ReadAll(r)
 	if err != nil {
 		return
@@ -39,28 +39,20 @@ func getUsers(r io.Reader) (result users, err error) {
 
 	lines := strings.Split(string(content), "\n")
 	for i, line := range lines {
-		var user User
-		if err = json.Unmarshal([]byte(line), &user); err != nil {
-			return
+		v, err := parser.Parse(line)
+		if err != nil {
+			log.Fatal(err)
 		}
-		result[i] = user
+		emails[i] = string(v.GetStringBytes("Email"))
 	}
 	return
 }
 
-func countDomains(u users, domain string) (DomainStat, error) {
+func countDomains(e [100_000]string, domain string) (DomainStat, error) {
 	result := make(DomainStat)
-
-	for _, user := range u {
-		matched, err := regexp.Match("\\."+domain, []byte(user.Email))
-		if err != nil {
-			return nil, err
-		}
-
-		if matched {
-			num := result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])]
-			num++
-			result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])] = num
+	for _, email := range e {
+		if strings.Contains(email, domain) {
+			result[strings.ToLower(strings.SplitN(email, "@", 2)[1])]++
 		}
 	}
 	return result, nil
