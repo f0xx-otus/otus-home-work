@@ -1,11 +1,12 @@
 package hw10_program_optimization //nolint:golint,stylecheck
 
 import (
-	"github.com/valyala/fastjson"
 	"io"
 	"io/ioutil"
 	"log"
 	"strings"
+
+	"github.com/valyala/fastjson"
 )
 
 type User struct {
