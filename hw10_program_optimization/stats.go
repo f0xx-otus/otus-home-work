@@ -1,55 +1,62 @@
 package hw10_program_optimization //nolint:golint,stylecheck
 
 import (
+	"bufio"
+	"errors"
 	"io"
-	"io/ioutil"
 	"log"
 	"strings"
 
-	"github.com/valyala/fastjson"
+	"github.com/mailru/easyjson"
 )
 
 type User struct {
-	ID       int
-	Name     string
-	Username string
+	ID       int    `json:"-"`
+	Name     string `json:"-"`
+	Username string `json:"-"`
 	Email    string
-	Phone    string
-	Password string
-	Address  string
+	Phone    string `json:"-"`
+	Password string `json:"-"`
+	Address  string `json:"-"`
 }
 
 type DomainStat map[string]int
 
-var emails [100_000]string
-var parser fastjson.Parser
+var (
+	emails         []string
+	ErrEmptyDomain = errors.New("domain name can't be empty")
+)
 
 func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
-	err := getEmails(r)
-	if err != nil {
-		return nil, err
+	if domain == "" {
+		return nil, ErrEmptyDomain
 	}
+	getEmails(r)
 	return countDomains(emails, domain)
 }
 
-func getEmails(r io.Reader) (err error) {
-	content, err := ioutil.ReadAll(r)
-	if err != nil {
-		return
-	}
-
-	lines := strings.Split(string(content), "\n")
-	for i, line := range lines {
-		v, err := parser.Parse(line)
+func getEmails(r io.Reader) {
+	emails = []string{""}
+	var user User
+	reader := bufio.NewReader(r)
+	for {
+		line, _, err := reader.ReadLine()
 		if err != nil {
-			log.Fatal(err)
+			if err == io.EOF {
+				break
+			}
+			log.Fatal("can't read the line", err)
 		}
-		emails[i] = string(v.GetStringBytes("Email"))
+
+		if err := easyjson.Unmarshal(line, &user); err != nil {
+			log.Fatal("can't unmarshal the line", err)
+		}
+		emails = append(emails, user.Email)
 	}
-	return
 }
 
-func countDomains(e [100_000]string, domain string) (DomainStat, error) {
+func countDomains(e []string, domain string) (DomainStat, error) {
+	domain = strings.ToLower(domain)
 	result := make(DomainStat)
 	for _, email := range e {
 		if strings.Contains(email, domain) {

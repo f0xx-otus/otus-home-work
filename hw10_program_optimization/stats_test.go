@@ -36,4 +36,26 @@ func TestGetDomainStat(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, DomainStat{}, result)
 	})
+
+	t.Run("find 'absent domain'", func(t *testing.T) {
+		_, err := GetDomainStat(bytes.NewBufferString(data), "")
+		require.EqualError(t, err, "domain name can't be empty")
+	})
+
+	t.Run("find domain with capital letter 'Com'", func(t *testing.T) {
+		result, err := GetDomainStat(bytes.NewBufferString(data), "Com")
+		require.NoError(t, err)
+		require.Equal(t, DomainStat{
+			"browsecat.com": 2,
+			"linktype.com":  1,
+		}, result)
+	})
+
+	t.Run("find cyrillic 'ру'", func(t *testing.T) {
+		data2 := `{"Id":1,"Name":"Howard Mendoza","Username":"0Oliver","Email":"aliquid_qui_ea@Browsedrive.ру","Phone":"6-866-899-36-79","Password":"InAQJvsq","Address":"Blackbird Place 25"}`
+
+		result, err := GetDomainStat(bytes.NewBufferString(data2), "ру")
+		require.NoError(t, err)
+		require.Equal(t, DomainStat{"browsedrive.ру": 1}, result)
+	})
 }
