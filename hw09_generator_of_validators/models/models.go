@@ -4,6 +4,8 @@ type UserRole string
 
 // NOTE: Several struct specs in one type declaration are allowed.
 
+//go:generate go-validate $GOFILE
+
 type (
 	User struct {
 		ID     string `json:"id" validate:"len:36"`

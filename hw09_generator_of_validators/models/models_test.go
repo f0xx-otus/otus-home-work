@@ -3,6 +3,7 @@
 package models
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -25,7 +26,7 @@ func TestUserValidation(t *testing.T) {
 	}
 	requireNoValidationErrors(t, goodUser)
 
-	t.Run("ID length", func(t *testing.T) {
+	t.Run("ID length, error", func(t *testing.T) {
 		u := goodUser
 		u.ID = "123"
 
@@ -60,8 +61,11 @@ func TestUserValidation(t *testing.T) {
 	})
 
 	t.Run("phones slice", func(t *testing.T) {
-		// Write me :)
-		t.Fail()
+		u := goodUser
+
+		u.Phones = []string{"+1234567890", "120909"}
+		errs, _ := u.Validate()
+		require.Equal(t, len(errs), 1)
 	})
 
 	t.Run("many errors", func(t *testing.T) {
@@ -77,6 +81,7 @@ func TestUserValidation(t *testing.T) {
 		for _, e := range errs {
 			fields = append(fields, e.Field)
 		}
+		fmt.Println(fields)
 		require.ElementsMatch(t, fields, []string{"Age", "Email", "Role"})
 	})
 }
